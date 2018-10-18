@@ -6,19 +6,21 @@ classdef Arm4D < DynSys
     m1      % Mass of links
     m2     
     g       % Gravity constant
-    q_min   % Joint limits
-    q_max
-    dq_min  % Velocity limits
-    dq_max
-    uMin    % Control bounds
-    uMax
+    q_max   % Joint limits
+    q_min
+    dq_max  % Velocity limits
+    dq_min
+    uMax    % Control bounds
+    uMin
+    dMax
+    dMin
     alpha   % Constants for equations of motion
     beta
     delta
   end % end properties
-  
+
   methods
-    function obj = Arm4D(x, uMin, uMax, dims, l1, l2, m1, m2, grid_min, grid_max)
+    function obj = Arm4D(x, uMax, dMax, l1, l2, m1, m2, grid_min, grid_max, dims)
       % obj = Arm4D(x, uMin, uMax)
       %
       % Constructor. Creates a robot arm object with a unique ID,
@@ -46,11 +48,10 @@ classdef Arm4D < DynSys
       % Default control bounds if not provided
       if nargin < 2
         uMax = 3;
-        uMin = -3;
       end
       
       % Default number of dims if not provided
-      if nargin < 4
+      if nargin < 10
         dims = 1:4;
       end
       
@@ -58,7 +59,9 @@ classdef Arm4D < DynSys
       obj.xhist = x;
       
       obj.uMax = uMax;
-      obj.uMin = uMin;
+      obj.uMin = -uMax;
+      obj.dMax = dMax;
+      obj.dMin = -dMax;
       
       obj.l1 = l1;
       obj.l2 = l2;
