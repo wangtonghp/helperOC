@@ -1,4 +1,4 @@
-function main_1DoF()
+function main_Arm2D()
 % 1. Run Backward Reachable Set (BRS) with a goal
 %     uMode = 'min' <-- goal
 %     minWith = 'none' <-- Set (not tube)
@@ -74,7 +74,7 @@ dMode = 'max';
 
 % Define dynamic system
 % obj = DubinsCar(x, wMax, speed, dMax)
-dCar = Manipurator([0, 0], u_max, d_max); %do dStep3 here
+dCar = Arm2D([0, 0], u_max, d_max); %do dStep3 here
 
 % Put grid and dynamic systems into schemeData
 schemeData.grid = g;
@@ -86,7 +86,7 @@ schemeData.dMode = dMode;
 
 
 %% If you have obstacles, compute them here
-%obstacles = shapeCylinder(g, 2, 1, 0.1);
+obstacles = shapeCylinder(g, 2, 1, 0.1);
 %HJIextraArgs.obstacles = obstacles;
 
 %% Compute value function
@@ -99,7 +99,7 @@ HJIextraArgs.deleteLastPlot = true; %delete previous plot as you update
 % HJIPDE_solve(data0, tau, schemeData, minWith, extraArgs)
 [data, tau2, ~] = ...
   HJIPDE_solve(data0, tau, schemeData, 'none', HJIextraArgs);
-csvwrite('2Dim.csv',data);
+csvwrite('Arm2D.csv',data);
 
 %% Compute optimal trajectory from some initial state
 if compTraj
@@ -133,7 +133,7 @@ if compTraj
       computeOptTraj(g, dataTraj, tau2, dCar, TrajextraArgs);
 
   
-v = VideoWriter('movie.mp4','MPEG-4'); % MPEG4‚¾‚ÆPowerPoint2010‚É“\‚Á‚Ä‚à“®‚©‚È‚¢
+v = VideoWriter('Arm2D.mp4','MPEG-4'); % MPEG4‚¾‚ÆPowerPoint2010‚É“\‚Á‚Ä‚à“®‚©‚È‚¢
 % v = VideoWriter('movie.avi');
 open(v);
 %xy plot

@@ -1,4 +1,4 @@
-function main_2DoF_KS()
+function main_Arm4D()
 % 1. Run Backward Reachable Set (BRS) with a goal
 %     uMode = 'min' <-- goal
 %     minWith = 'none' <-- Set (not tube)
@@ -76,7 +76,7 @@ dMode = 'max';
 
 % Define dynamic system
 % obj = DubinsCar(x, wMax, speed, dMax)
-dCar = Arm4D_KS([0, 0, 0, 0], uMax, dMax, grid_min, grid_max); %do dStep3 here
+dCar = Arm4D([0, 0, 0, 0], uMax, dMax, grid_min, grid_max); %do dStep3 here
 % Put grid and dynamic systems into schemeData
 schemeData.grid = g;
 schemeData.dynSys = dCar;
@@ -102,9 +102,7 @@ HJIextraArgs.deleteLastPlot = true; %delete previous plot as you update
 % HJIPDE_solve(data0, tau, schemeData, minWith, extraArgs)
 [data, tau2, ~] = ...
   HJIPDE_solve(data0, tau, schemeData, 'none', HJIextraArgs);
-csvwrite('4Dim_KS.csv',data);
-
-
+csvwrite('Arm4D.csv',data);
 
 %% Compute optimal trajectory from some initial state
 if compTraj
@@ -119,7 +117,7 @@ if compTraj
   
   if value <= 0 %if initial state is in BRS/BRT
     % find optimal trajectory
-    %disp(value)
+    disp(value)
     dCar.x = xinit; %set initial state of the dubins car
 
     TrajextraArgs.uMode = uMode; %set if control wants to min or max
@@ -137,7 +135,7 @@ if compTraj
     [traj, traj_tau] = ...
       computeOptTraj(g, dataTraj, tau2, dCar, TrajextraArgs);
 
-v = VideoWriter('movie.mp4','MPEG-4');
+v = VideoWriter('Arm4D.mp4','MPEG-4');
 % v = VideoWriter('movie.avi');
 open(v);
 %xy plot
@@ -206,8 +204,8 @@ while iter2 <= length(traj_tau)
     
     %Obstacle plot
     for i=1:1:count_oi
-        plot(dest_oxx1(i), dest_oyy1(i), 'g.')
-        plot(dest_oxx2(i), dest_oyy2(i), 'g.')   
+        %plot(dest_oxx1(i), dest_oyy1(i), 'g.')
+        %plot(dest_oxx2(i), dest_oyy2(i), 'g.')   
     end
 
     %axis(limits)

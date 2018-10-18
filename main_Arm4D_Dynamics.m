@@ -1,4 +1,4 @@
-function main_2DoF_K()
+function main_Arm4D_Dynamics()
 % 1. Run Backward Reachable Set (BRS) with a goal
 %     uMode = 'min' <-- goal
 %     minWith = 'none' <-- Set (not tube)
@@ -40,17 +40,17 @@ compTraj = true;
 grid_min = [0; -pi/2; -20; -20]; % Lower corner of computation domain
 grid_max = [pi; pi/2; 20; 20];    % Upper corner of computation domain
 %N = [41; 41; 41; 41];         % Number of grid points per dimension
-N = [15; 15; 15; 15];
+N = [11; 11; 11; 11];         % Number of grid points per dimension
 pdDims = [1; 2];               % 3rd dimension is periodic
+
 g = createGrid(grid_min, grid_max, N, pdDims);
 % Use "g = createGrid(grid_min, grid_max, N);" if there are no periodic
 % state space dimensions
 
 %% target set
 R = 0.2;
-theta = pi/4;
 % data0 = shapeCylinder(grid,ignoreDims,center,radius)
-data0 = shapeCylinder(g, [3;4], [theta; theta; 0; 0], R);
+data0 = shapeCylinder(g, [3;4], [pi/8; pi/8], R);
 % also try shapeRectangleByCorners, shapeSphere, etc.
 
 %% time vector
@@ -62,8 +62,12 @@ tau = t0:dt:tMax;
 %% problem parameters
 
 % input bounds
-uMax = 25;
-dMax = 0.1;
+uMax = [25;25];
+dMax = [0.1;0.1];
+l1=5;
+l2=5;
+m1=5;
+m2=5;
 
 % do dStep1 here
 
@@ -76,20 +80,16 @@ dMode = 'max';
 
 % Define dynamic system
 % obj = DubinsCar(x, wMax, speed, dMax)
-dCar = Arm4D_K([0, 0, 0, 0], uMax, dMax, grid_min, grid_max); %do dStep3 here
+dCar = Arm4D_Dynamics([0, 0, 0, 0], uMax, dMax, l1, l2, m1, m2, grid_min, grid_max); %do dStep3 here
 % Put grid and dynamic systems into schemeData
 schemeData.grid = g;
 schemeData.dynSys = dCar;
-schemeData.accuracy = 'high'; %set accuracy
+schemeData.accuracy = 'medium'; %set accuracy
 schemeData.uMode = uMode;
 %do dStep4 here
 schemeData.dMode = dMode;
 
 %% If you have obstacles, compute them here
-oR=0.2;
-otheta = pi/8;
-obstacles = shapeCylinder(g, [3;4], [otheta; otheta; 0; 0], oR);
-%HJIextraArgs.obstacles = obstacles;
 
 %% Compute value function
 
@@ -97,13 +97,13 @@ HJIextraArgs.visualize = false; %show plot
 HJIextraArgs.fig_num = 1; %set figure number
 HJIextraArgs.deleteLastPlot = true; %delete previous plot as you update
 
-
 %[data, tau, extraOuts] = ...
 % HJIPDE_solve(data0, tau, schemeData, minWith, extraArgs)
 [data, tau2, ~] = ...
   HJIPDE_solve(data0, tau, schemeData, 'none', HJIextraArgs);
-csvwrite('4Dim_K.csv',data);
 
+
+csvwrite('Arm4D_Dynamics.csv',data);
 
 
 %% Compute optimal trajectory from some initial state
@@ -119,7 +119,7 @@ if compTraj
   
   if value <= 0 %if initial state is in BRS/BRT
     % find optimal trajectory
-    disp(value)
+    
     dCar.x = xinit; %set initial state of the dubins car
 
     TrajextraArgs.uMode = uMode; %set if control wants to min or max
@@ -136,54 +136,34 @@ if compTraj
     % computeOptTraj(g, data, tau, dynSys, extraArgs)
     [traj, traj_tau] = ...
       computeOptTraj(g, dataTraj, tau2, dCar, TrajextraArgs);
-
-v = VideoWriter('movie.mp4','MPEG-4');
+  
+v = VideoWriter('Arm4D_Dynamics.mp4','MPEG-4'); % MPEG4‚¾‚ÆPowerPoint2010‚É“\‚Á‚Ä‚à“®‚©‚È‚¢
 % v = VideoWriter('movie.avi');
 open(v);
 %xy plot
 iter2 = 1;
 l = 5;
-%limits = [0 12 0 12];
+limits = [0 12 0 12];
 x = 0:0.2:l;
 
-%Target
 i=1;
 dest_xx1 = zeros(41,1);
 dest_yy1 = zeros(41,1);
 dest_xx2 = zeros(41,1);
 dest_yy2 = zeros(41,1);
 R=0.2;
+l=5;
 
-for theta1 = theta-R:0.01:theta+R
-   root = sqrt(R^2-(theta1-theta)^2);
-   theta2_minus = theta-root; 
-   theta2_plus = theta+root; 
-   dest_xx1(i) = l*cos(theta1)+l*cos(theta1+theta2_minus);
-   dest_yy1(i) = l*sin(theta1)+l*sin(theta1+theta2_minus);
-   dest_xx2(i) = l*cos(theta1)+l*cos(theta1+theta2_plus);
-   dest_yy2(i) = l*sin(theta1)+l*sin(theta1+theta2_plus);
+for theta1 = -R:0.01:R
+   theta2_root = sqrt(0.04-(theta1)^2);
+   theta2_in = pi/4-theta2_root; 
+   theta2_out = pi/4+theta2_root; 
+   dest_xx1(i) = l*cos(pi/4+theta1)+l*cos(pi/4+theta1+theta2_in);
+   dest_yy1(i) = l*sin(pi/4+theta1)+l*sin(pi/4+theta1+theta2_in);
+   dest_xx2(i) = l*cos(pi/4+theta1)+l*cos(pi/4+theta1+theta2_out);
+   dest_yy2(i) = l*sin(pi/4+theta1)+l*sin(pi/4+theta1+theta2_out);
    i=i+1;
 end
-count_i = i-1;
-
-%Obstacle
-j=1;
-dest_oxx1 = zeros(41,1);
-dest_oyy1 = zeros(41,1);
-dest_oxx2 = zeros(41,1);
-dest_oyy2 = zeros(41,1);
-
-for otheta1 = otheta-oR:0.01:otheta+oR
-   oroot = sqrt(oR^2-(otheta1-otheta)^2);
-   otheta2_minus = otheta-oroot; 
-   otheta2_plus = otheta+oroot; 
-   dest_oxx1(j) = l*cos(otheta1)+l*cos(otheta1+otheta2_minus);
-   dest_oyy1(j) = l*sin(otheta1)+l*sin(otheta1+otheta2_minus);
-   dest_oxx2(j) = l*cos(otheta1)+l*cos(otheta1+otheta2_plus);
-   dest_oyy2(j) = l*sin(otheta1)+l*sin(otheta1+otheta2_plus);
-   j=j+1;
-end
-count_oi = j-1;
 
 
 figure
@@ -193,24 +173,18 @@ while iter2 <= length(traj_tau)
     yy1 = x*sin(traj(1, iter2));
     xx2 = x*cos(traj(2, iter2)+traj(1, iter2))+l*cos(traj(1, iter2));
     yy2 = x*sin(traj(2, iter2)+traj(1, iter2))+l*sin(traj(1, iter2));
+    %oxx = l*cos(1);
+    %oyy = l*sin(1);
     plot(xx1, yy1, 'k-')
     
     hold on
-    plot(xx2, yy2, 'k-')
-    
-    %Target plot
-    for i=1:1:count_i
+    %plot(oxx, oyy, 'go')
+    for i=1:1:41
         plot(dest_xx1(i), dest_yy1(i), 'b.')
         plot(dest_xx2(i), dest_yy2(i), 'b.')
     end
-    
-    %Obstacle plot
-    for i=1:1:count_oi
-        %plot(dest_oxx1(i), dest_oyy1(i), 'g.')
-        %plot(dest_oxx2(i), dest_oyy2(i), 'g.')   
-    end
-
-    %axis(limits)
+    plot(xx2, yy2, 'k-')
+    axis(limits)
     iter2 = iter2 + 1;
     drawnow
     %hold off
@@ -225,5 +199,5 @@ close(v); % ‚Æ‚¶‚é
     error(['Initial state is not in the BRS/BRT! It have a value of ' num2str(value,2)])
   end
 end
-
+%toc
 end

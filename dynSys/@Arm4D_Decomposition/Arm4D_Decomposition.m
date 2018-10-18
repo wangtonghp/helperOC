@@ -1,4 +1,4 @@
-classdef Arm4D_KS < DynSys
+classdef Arm4D_Decomposition < DynSys
   properties
     dims    % Active dimensions
     uMax    % Control bounds
@@ -10,7 +10,7 @@ classdef Arm4D_KS < DynSys
   end % end properties
 
   methods
-    function obj = Arm4D_KS(x, uMax, dMax, grid_min, grid_max, dims)
+    function obj = Arm4D_Decomposition(x, uMax, dMax, grid_min, grid_max, dims)
         
       if numel(x) ~= obj.nx
         error('Initial state does not have right dimension!');

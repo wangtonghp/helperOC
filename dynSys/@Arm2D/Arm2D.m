@@ -1,4 +1,4 @@
-classdef Manipurator < DynSys
+classdef Arm2D < DynSys
   properties
     dims
     u_max
@@ -6,7 +6,7 @@ classdef Manipurator < DynSys
   end
   
   methods
-    function obj = Manipurator(x, u_max, d_max, dims)
+    function obj = Arm2D(x, u_max, d_max, dims)
       
       if numel(x) ~= obj.nx
         error('Initial state does not have right dimension!');
