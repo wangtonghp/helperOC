@@ -53,7 +53,7 @@ data0 = shapeCylinder(g, 3, [pi/2; 0], R);
 
 %% time vector
 t0 = 0;
-tMax = 5;
+tMax = 2;
 dt = 0.05;
 tau = t0:dt:tMax;
 

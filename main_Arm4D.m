@@ -37,10 +37,10 @@ function main_Arm4D()
 compTraj = true;
 
 %% Grid
-grid_min = [0; -pi/2; -20; -20]; % Lower corner of computation domain
-grid_max = [pi; pi/2; 20; 20];    % Upper corner of computation domain
-%N = [41; 41; 41; 41];         % Number of grid points per dimension
-N = [15; 15; 15; 15];
+grid_min = [-pi; -pi; -3; -3]; % Lower corner of computation domain
+grid_max = [pi; pi; 3; 3];    % Upper corner of computation domain
+N = [41; 41; 41; 41];         % Number of grid points per dimension
+%N = [15; 15; 15; 15];
 pdDims = [1; 2];               % 3rd dimension is periodic
 g = createGrid(grid_min, grid_max, N, pdDims);
 % Use "g = createGrid(grid_min, grid_max, N);" if there are no periodic
@@ -55,14 +55,14 @@ data0 = shapeCylinder(g, [3;4], [theta; theta; 0; 0], R);
 
 %% time vector
 t0 = 0;
-tMax = 5;
+tMax = 2;
 dt = 0.05;
 tau = t0:dt:tMax;
 
 %% problem parameters
 
 % input bounds
-uMax = 25;
+uMax = 1;
 dMax = 0.1;
 
 % do dStep1 here
@@ -76,7 +76,7 @@ dMode = 'max';
 
 % Define dynamic system
 % obj = DubinsCar(x, wMax, speed, dMax)
-dCar = Arm4D([0, 0, 0, 0], uMax, dMax, grid_min, grid_max); %do dStep3 here
+dCar = Arm4D([0, 0, 0, 0], uMax, dMax); %do dStep3 here
 % Put grid and dynamic systems into schemeData
 schemeData.grid = g;
 schemeData.dynSys = dCar;
@@ -89,7 +89,7 @@ schemeData.dMode = dMode;
 oR=0.2;
 otheta = pi/8;
 obstacles = shapeCylinder(g, [3;4], [otheta; otheta; 0; 0], oR);
-%HJIextraArgs.obstacles = obstacles;
+HJIextraArgs.obstacles = obstacles;
 
 %% Compute value function
 
@@ -146,11 +146,12 @@ x = 0:0.2:l;
 
 %Target
 i=1;
-dest_xx1 = zeros(41,1);
-dest_yy1 = zeros(41,1);
-dest_xx2 = zeros(41,1);
-dest_yy2 = zeros(41,1);
-R=0.2;
+mm = 2*R/0.01+1;
+dest_xx1 = zeros(mm,1);
+dest_yy1 = zeros(mm,1);
+dest_xx2 = zeros(mm,1);
+dest_yy2 = zeros(mm,1);
+
 
 for theta1 = theta-R:0.01:theta+R
    root = sqrt(R^2-(theta1-theta)^2);
@@ -166,10 +167,11 @@ count_i = i-1;
 
 %Obstacle
 j=1;
-dest_oxx1 = zeros(41,1);
-dest_oyy1 = zeros(41,1);
-dest_oxx2 = zeros(41,1);
-dest_oyy2 = zeros(41,1);
+nn = 2*oR/0.01+1;
+dest_oxx1 = zeros(nn,1);
+dest_oyy1 = zeros(nn,1);
+dest_oxx2 = zeros(nn,1);
+dest_oyy2 = zeros(nn,1);
 
 for otheta1 = otheta-oR:0.01:otheta+oR
    oroot = sqrt(oR^2-(otheta1-otheta)^2);
@@ -204,8 +206,8 @@ while iter2 <= length(traj_tau)
     
     %Obstacle plot
     for i=1:1:count_oi
-        %plot(dest_oxx1(i), dest_oyy1(i), 'g.')
-        %plot(dest_oxx2(i), dest_oyy2(i), 'g.')   
+        plot(dest_oxx1(i), dest_oyy1(i), 'g.')
+        plot(dest_oxx2(i), dest_oyy2(i), 'g.')   
     end
 
     %axis(limits)

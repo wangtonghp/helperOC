@@ -10,7 +10,7 @@ classdef Arm4D < DynSys
   end % end properties
 
   methods
-    function obj = Arm4D(x, uMax, dMax, grid_min, grid_max, dims)
+    function obj = Arm4D(x, uMax, dMax, dims)
         
       if numel(x) ~= obj.nx
         error('Initial state does not have right dimension!');
@@ -44,13 +44,7 @@ classdef Arm4D < DynSys
       obj.uMax = uMax;
       obj.dMax = dMax;
       obj.dims = dims;
-      
-      % joint limits
-      obj.q_min = grid_min(1:2); %[0; -pi/2];
-      obj.q_max = grid_max(1:2); %[pi; pi/2];
-      % veloicity limits
-      obj.dq_min = grid_min(3:4); %[-20; -20];
-      obj.dq_max = grid_max(3:4); %[20; 20];
+     
 
     end % end constructor
 

@@ -67,6 +67,9 @@ traj = nan(g.dim, tauLength);
 traj(:,1) = dynSys.x;
 tEarliest = 1;
 
+
+v = VideoWriter('zero-levelset.mp4','MPEG-4');
+open(v);
 while iter <= tauLength 
   % Determine the earliest time that the current state is in the reachable set
   % Binary search
@@ -80,6 +83,9 @@ while iter <= tauLength
   
   % Visualize BRS corresponding to current trajectory point
   if visualize
+      
+
+    
     plot(traj(showDims(1), iter), traj(showDims(2), iter), 'k.')
     hold on
     [g2D, data2D] = proj(g, BRS_at_t, hideDims, traj(hideDims,iter));
@@ -111,7 +117,11 @@ while iter <= tauLength
   % Record new point on nominal trajectory
   iter = iter + 1;
   traj(:,iter) = dynSys.x;
+
+  frame = getframe(gcf); % アクティブなfigureをframeとして描きだす
+  writeVideo(v,frame);
 end
+close(v); % とじる
 
 % Delete unused indices
 traj(:,iter:end) = [];
